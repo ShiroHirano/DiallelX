@@ -390,6 +390,3 @@ IF our algorithm is along eq.(1), IFFT is required $m$ times, and the equation w
 T = (0.278 + 2.634) m = 2.912 \ m.
 ```
 Therefore, eq.(2) gets relatively faster as the number of channels increases.
-
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-<script type="text/x-mathjax-config"> MathJax.Hub.Config({ tex2jax: {inlineMath: [['$', '$']]}, messageStyle: "none" });</script>
