@@ -1,0 +1,136 @@
+#!/bin/bash
+
+function usage() {
+cat <<EOF
+Usage: ./DiallelXCorr [options] -d [IOdirname]
+
+Assuming that continuous and template waveform files,
+SAC or float32 binary format without record boundaries, 
+are located in ./[IOdirname] directory.
+Nomenclature of the files are as follows:
+./[IOdirname]/continuous_records/[RecordID]_[ChannelID].sac (or .bin)
+./[IOdirname]/templates/[TemplateID]_[ChannelID].sac (or .bin)
+where [RecordID] and [TemplateID] must not contain underscore,
+and [ChannelID] are common among continuous and template files.
+
+Options:
+-a [A]      Specify accuracy, A, where
+            (stride distance)=(length of template)/(accuracy),
+            hence, the larger value raises accuracy and computation time. 
+            A must be a divisor of (length of template).
+            Default value is A=2 (i.e., -a 2).
+-l          List up files and parameters without NCC calculation
+            to help check the required memory and computational time
+            that is roughly propotional to "computation cost" value.
+-n [N]      Specify number of OpenMP threads, N.
+            Default value is the number of logical processors.
+-o [ext]    Specify output filetype; txt, csv, and bin are available.
+            Default value is csv (i.e., -o csv).
+-p [N]      Plot top-N similar waveform pairs; available only after calculation.
+-h, --help  Display this help and exit.
+
+EOF
+}
+
+cd `dirname $0`
+
+accuracy=2
+mode=TotalProgressReports
+o_ext=csv
+NumPlt=0
+
+while (( $# > 0 )); do
+    case $1 in
+        -a)
+            accuracy=$2
+            if expr "$accuracy" : "[0-9]*$" >&/dev/null && [ ${accuracy} -gt 1 ];then
+                echo > /dev/null
+            else
+                echo "Put an interger (>1) after -a"
+                exit 1
+            fi
+            ;;
+        -d)
+            iodir=${2%/}
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        -l)
+            mode="IsParameterCheckMode"
+            ;;
+        -n)
+            export OMP_NUM_THREADS=$2
+            ;;
+        -o)
+            o_ext=$2
+            ;;
+        -p)
+            NumPlt=$2
+            if expr "$NumPlt" : "[0-9]*$" >&/dev/null && [ ${NumPlt} -gt 0 ];then
+                echo > /dev/null
+            else
+                echo "Put a positive interger after -p"
+                exit 1
+            fi
+            ;;
+        -*)
+            echo "Invalid option."
+            echo "To display help, type as follows:"
+            echo "./DiallelXCorr -h"
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+if [ -z "${iodir}" ]; then
+    echo "ERROR: Specity IO directory name as:"
+    echo "./DiallelX [options] -d [IO directory name]"
+    echo "To display help, type as follows:"
+    echo "./DiallelXCorr -h"
+    exit 1
+elif [ ! -d ${iodir} ]; then
+    echo "ERROR: directory ./${iodir} does not exist"
+    exit 1
+elif [ ! -d ${iodir}/continuous_records ]; then
+    echo "ERROR: directory ./${iodir}/continuous_records does not exist"
+    exit 1
+elif [ ! -d ${iodir}/templates ]; then
+    echo "ERROR: directory ./${iodir}/templates does not exist"
+    exit 1
+fi
+
+if [ ${NumPlt} -gt 0 ]; then
+    echo "DiallelX: plotting top ${NumPlt} pairs in ${iodir}/results/figs/"
+    . ./src/plot.sh ${NumPlt} ${iodir}
+    echo "DiallelX: Done"
+    exit 0
+fi
+
+logfile=${iodir}/results/stdout.log
+rm -f ${logfile}
+date +'Start: %Y-%m-%d %T' > ${logfile}
+. ./src/generate_input_files.sh ${accuracy} ${iodir}
+echo "Extent="${o_ext}" # extention of output files" >> ./${iodir}/parameters/parameters.ini
+
+./bin/DiallelX.o ${mode} ${iodir} ${o_ext} 1> >(tee -a ${logfile})
+
+rm -f ./${iodir}/results/temporal_log.bin
+rm -f /tmp/DiallelX_temporal_log.bin
+
+echo "DiallelX: Done"
+echo "DiallelX: Done" >> ${logfile}
+date +'End: %Y-%m-%d %T' >> ${logfile}
+echo
+echo >> ${logfile}
+echo "CPU and Compiler info:" >> ${logfile}
+lscpu | grep "Model name" >> ${logfile}
+./src/compiler_finder.sh >> ${logfile}
+
+echo
+echo "To plot top N similar waveform pairs, run:
+./DiallelX -p N -d ${iodir}"
+
+exit
