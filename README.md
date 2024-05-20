@@ -46,7 +46,7 @@ Therefore, the term *diallel* in this context represents the set of cross-correl
 
 Just running `make` under the `DiallelX` directory compiles the program.
 However, other tools must have been installed before `make`.
-Users have three installation options (the first is recommended, given official deprecation of `ifort` as in the second):
+Users have three installation options (the first is recommended, given official deprecation of `ifort` as in the third):
 
 1. Install `gfortran` and `fftw3`
 1. Install [Intel oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) and [Intel HPC Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit-download.html)
