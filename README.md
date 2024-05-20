@@ -58,12 +58,12 @@ Here is the installation guide for Linux Mint 21.x (the development environment 
 
 For Ubuntu (`make` has not been installed by default) or Linux Mint:
 ```bash
-$ sudo apt install make gfortran libfftw3-dev gnuplot -y
+$ sudo apt install make gfortran libfftw3-dev -y
 ```
 
 For AlmaLinux:
 ```bash
-$ sudo dnf install gfortran fftw3-devel gnuplot -y 
+$ sudo dnf install gfortran fftw3-devel -y 
 ```
 <!--
 For macOS Sonoma:
