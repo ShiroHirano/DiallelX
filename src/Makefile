@@ -28,6 +28,7 @@ OBJS = m_count_time.o \
        main.o
 
 $(PROGRAM): $(OBJS)
+	mkdir ../bin 2> /dev/null
 	$(FC) -I./ $^ ${INCLUDE} ${LDFLAGS} ${LIBS} ${FFLAGS} -o ${PROGRAM}
 
 .SUFFIXES:
