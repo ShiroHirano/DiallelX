@@ -313,7 +313,7 @@ Therefore, the waveform similar to the 604th template consists of 8639986th to 8
 ### histogram.dat
 
 This file includes a histogram of NCC values for the diallel.
-Therefore, total number in whole bins is (# of records)$\times$(# of windows)$\times$(# of templates).
+Therefore, total number in whole bins is (# of records) $\times$ (# of windows) $\times$ (# of templates).
 The first, second, and third columns are NCC values, the number in the bin, and the accumulated number from the largest (=1.0), respectively.
 Users may define a threshold for event definition based on this histogram.
 
