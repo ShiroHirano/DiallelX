@@ -7,6 +7,7 @@ program main
     use m_global_vars, only: kd, threshold, n_bin, skip, prm
     use m_general_purpose_functions, only: normalize
     use m_io
+    use m_synthetic
     implicit none
     type(Similarity), allocatable :: NCC(:)
     complex(kd), allocatable :: Ftmp(:, :, :), Fcnt(:, :, :)
@@ -21,9 +22,15 @@ program main
     call getarg(2,iodir)
     call getarg(3,extention)
 
-    call read_parameters(iodir,extention,prm) ! program stops here if -p option is specified.
+    if (mode == "DummyDataSynthesizer") then
+        print*, trim(iodir)
+        call synthetic(trim(iodir))
+        stop
+    end if
 
-    if (mode == "IsParameterCheckMode") stop
+    call read_parameters(trim(iodir),extention,prm) ! program stops here if -p option is specified.
+
+    if (mode == "ParameterCheckerMode") stop
 
     call FFT_templ(prm, Ftmp)
 

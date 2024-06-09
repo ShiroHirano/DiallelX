@@ -24,8 +24,8 @@ Options:
             that is roughly propotional to "computation cost" value.
 -n [N]      Specify number of OpenMP threads, N.
             Default value is the number of logical processors.
--o [ext]    Specify output filetype; txt, csv, and bin are available.
-            Default value is csv (i.e., -o csv).
+-s          Generate synthetic waveform files in [IOdirname] for test.
+            A directory [IOdirname] will be newly generated, so it must not pre-exist.
 -p [N]      Plot top-N similar waveform pairs; available only after calculation.
 -h, --help  Display this help and exit.
 
@@ -58,7 +58,7 @@ while (( $# > 0 )); do
             exit 0
             ;;
         -l)
-            mode="IsParameterCheckMode"
+            mode="ParameterCheckerMode"
             ;;
         -n)
             export OMP_NUM_THREADS=$2
@@ -75,6 +75,9 @@ while (( $# > 0 )); do
                 exit 1
             fi
             ;;
+        -s)
+            mode="DummyDataSynthesizer"
+            ;;
         -*)
             echo "Invalid option."
             echo "To display help, type as follows:"
@@ -84,6 +87,15 @@ while (( $# > 0 )); do
     esac
     shift
 done
+
+if [ ${mode} = "DummyDataSynthesizer" ];then
+    mkdir -p ${iodir}
+    mkdir -p ${iodir}/continuous_records
+    mkdir -p ${iodir}/templates
+    ./bin/DiallelX.o ${mode} ${iodir}
+    sort -V -t "," ${iodir}/synthetics.csv -o ${iodir}/synthetics.csv
+    exit 0
+fi
 
 if [ -z "${iodir}" ]; then
     echo "ERROR: Specity IO directory name as:"
@@ -113,11 +125,11 @@ logfile=${iodir}/results/stdout.log
 rm -f ${logfile}
 date +'Start: %Y-%m-%d %T' > ${logfile}
 . ./src/generate_input_files.sh ${accuracy} ${iodir}
-echo "Extent="${o_ext}" # extention of output files" >> ./${iodir}/parameters/parameters.ini
+echo "Extent="${o_ext}" # extention of output files" >> ${iodir}/parameters/parameters.ini
 
 ./bin/DiallelX.o ${mode} ${iodir} ${o_ext} 1> >(tee -a ${logfile})
 
-rm -f ./${iodir}/results/temporal_log.bin
+rm -f ${iodir}/results/temporal_log.bin
 rm -f /tmp/DiallelX_temporal_log.bin
 
 echo "DiallelX: Done"

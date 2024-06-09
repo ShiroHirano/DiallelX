@@ -4,10 +4,12 @@
 FC      = $(shell ./compiler_finder.sh)
 
 ifeq ($(FC),ifort)
-	FFLAGS  = -diag-disable=10448 -diag-disable=8291 -O3 -ipo -arch CORE-AVX2 -qopenmp
+#	FFLAGS  = -diag-disable=10448 -diag-disable=8291 -O3 -ipo -arch CORE-AVX2 -qopenmp
+	FFLAGS  = -diag-disable=10448 -diag-disable=8291 -CB -traceback -arch CORE-AVX2 -qopenmp
 	LIBS    = -qmkl
+	INCLUDE = -I/opt/intel/oneapi/compiler/2024.1/opt/compiler/include/intel64/
 else ifeq ($(FC),ifx)
-	FFLAGS  = -O3 -ipo -arch CORE-AVX2 -qopenmp
+	FFLAGS  = -diag-disable=8291 -O3 -ipo -arch CORE-AVX2 -qopenmp
 	LIBS    = -qmkl
 else ifeq ($(FC),gfortran)
 	FFLAGS  = -Ofast -O3 -march=native -fopenmp
@@ -25,6 +27,7 @@ OBJS = m_count_time.o \
        m_type_Similarity.o \
        m_sort.o \
        m_io.o \
+	   m_synthetic.o \
        main.o
 
 $(PROGRAM): $(OBJS)
@@ -38,4 +41,4 @@ $(PROGRAM): $(OBJS)
 	$(FC) ${INCLUDE} ${LIBS} ${FFLAGS} -c $<
 
 clean:
-	rm -f *.o *.mod ../bin/*
+	rm -fr *.o *.mod ../bin
