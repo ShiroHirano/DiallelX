@@ -1,7 +1,11 @@
 #!/bin/bash
 
-# Overwrite the right hand side to specify the compiler (ifort/ifx/gfortran).
-FC      = $(shell ./compiler_finder.sh)
+# Argument as compiler must be ifort, ifx, or gfortran.
+FC = $(compiler)
+
+ifeq ($(FC), )
+	FC      = $(shell ./compiler_finder.sh)
+endif
 
 ifeq ($(FC),ifort)
 	FFLAGS  = -diag-disable=10448 -diag-disable=8291 -O3 -ipo -arch CORE-AVX2 -qopenmp
