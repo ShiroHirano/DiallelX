@@ -54,10 +54,9 @@ Users have three installation options (the first is recommended, given official 
 
 Here is the installation guide for Linux Mint 21.x (the development environment of *DiallelX*), Ubuntu 22.04, and AlmaLinux 9.3 <!--macOS Sonoma-->.
 
-:::note warn
+[!WARNING]
 (2024-06-09)
 After upgrading to ifort Version 2021.12.0 Build 20240211_000000
-:::
 
 ### 1. Install `gfortran` and `libfftw3-dev`
 
