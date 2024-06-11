@@ -2,13 +2,11 @@
 
 <address><a href="https://interfacial.jp/">Shiro Hirano</a></address>
 
-<!--img src="https://img.shields.io/badge/-bash-00E599.svg">
-<img src="https://img.shields.io/badge/-fortran90+-0099E5.svg"-->
-
 Table of Contents
 
 - [*DiallelX*: Seismic network cross-correlation calculator](#diallelx-seismic-network-cross-correlation-calculator)
-  - [Summary](#summary)
+  - [Give it a try](#give-it-a-try)
+  - [Introduction](#introduction)
   - [Installation](#installation)
     - [1. Install `gfortran` and `libfftw3-dev`](#1-install-gfortran-and-libfftw3-dev)
     - [2. Install Intel oneAPI Base Toolkit and Intel HPC Toolkit](#2-install-intel-oneapi-base-toolkit-and-intel-hpc-toolkit)
@@ -25,7 +23,41 @@ Table of Contents
   - [Appendix B: Details of algorithm](#appendix-b-details-of-algorithm)
 
 
-## Summary
+## Give it a try
+
+<details>
+<summary>Ubuntu/Linux Mint</summary>
+
+```bash
+# Install required packages
+sudo apt install make gfortran libfftw3-dev gnuplot -y
+# Build DiallelX
+make
+# Generate dummy data in a directory named "test"
+./DiallelX -s -d test
+# Calculate NCCs among dummy data
+./DiallelX -d test
+# Plot top 100 similar waveform pairs
+./DiallelX -p 100 -d test
+```
+</details>
+
+<details>
+<summary>AlmaLinux</summary>
+
+```bash
+# Install required packages
+sudo dnf install gfortran fftw3-devel gnuplot -y 
+# Build DiallelX
+make
+# Generate dummy data in a directory named "test"
+./DiallelX -s -d test
+# Calculate Network Cross-correlation Coefficients among dummy continuous records and dummy templates
+./DiallelX -d test
+```
+</details>
+
+## Introduction
 
 *DiallelX* is a CPU-oriented modern fortran program to approximate Network Cross-Correlation coefficients (NCCs) among multiple continuous records and template waveforms observed at multiple seismic stations.
 The results, relatively less accurate but sufficient to find new seismic events, are obtained several-fold faster than a conventional scheme.
@@ -62,17 +94,17 @@ Here is the installation guide for Linux Mint 21.x (the development environment 
 
 For Ubuntu (`make` has not been installed by default) or Linux Mint:
 ```bash
-$ sudo apt install make gfortran libfftw3-dev -y
+sudo apt install make gfortran libfftw3-dev -y
 ```
 
 For AlmaLinux:
 ```bash
-$ sudo dnf install gfortran fftw3-devel -y 
+sudo dnf install gfortran fftw3-devel -y 
 ```
 <!--
 For macOS Sonoma:
 ```bash
-$ brew install gcc fftw
+brew install gcc fftw
 ```
 -->
 
@@ -80,15 +112,15 @@ $ brew install gcc fftw
 
 For Linux Mint/Ubuntu, the following procedures are provided in the above two links:
 ```bash
-$ wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \ | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
-$ echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-$ sudo apt update
-$ sudo apt install intel-basekit intel-hpckit -y
+wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \ | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+sudo apt update
+sudo apt install intel-basekit intel-hpckit -y
 ```
 
 After these installations, running
 ```bash
-$ echo "source /opt/intel/oneapi/setvars.sh > /dev/null" >> ~/.bashrc
+echo "source /opt/intel/oneapi/setvars.sh > /dev/null" >> ~/.bashrc
 ```
 is required to set environment variables.
 
@@ -124,7 +156,7 @@ Note that too long (e.g., 100 Hz yearly) data per file is not acceptable because
 The record IDs must be free of underscore ( _ ) because the first underscores are considered separators.
 `[ChannelID]` (e.g., station codes and components) must be common among continuous records and template waveforms and can include underscores; for example, the following format is possible for daily records:
 ```bash
-$ ls -1v [IOdirname]/continuous_records/
+ls -1v [IOdirname]/continuous_records/
 20231231_N.KYTH_E.sac # 1st continuous record, channel 1
 20231231_N.KYTH_N.sac # 1st continuous record, channel 2
 20231231_N.KYTH_U.sac # 1st continuous record, channel 3
@@ -151,7 +183,7 @@ Users have to locate template waveforms in `[IOdirname]/templates/`, where the f
 `[ChannelID]` (e.g., station codes and components) must be common among continuous records and template waveforms.
 The following format is possible for three template events in total:
 ```bash
-$ ls -1v [IOdirname]/templates/
+ls -1v [IOdirname]/templates/
 20231231-23583103_N.KYTH_E.sac # 1st template, channel 1
 20231231-23583103_N.KYTH_N.sac # 1st template, channel 2
 20231231-23583103_N.KYTH_U.sac # 1st template, channel 3
@@ -207,19 +239,19 @@ Also, [Appendix A: Visual example of a diallel](#appendix-a-visual-example-of-a-
 
 To calculate the diallel, run the following command line:
 ```bash
-$ ./DiallelX -d [IOdirname]
+./DiallelX -d [IOdirname]
 ```
 
 For more accurate results, a possible option is as follows:
 ```bash
-$ ./DiallelX -a [A] -d [IOdirname]
+./DiallelX -a [A] -d [IOdirname]
 ```
 with `-a 4` et cetera, where a positive integer `[A]` must be a divisor of the template waveform length, and the default is `-a 2`.
 The larger value of `[A]` raises accuracy and computation time; see [Algorithm: an overview](#algorithm-an-overview) section for details.
 
 The standard output like below will be shown when it works:
 ```bash
-$ ./DiallelX -d [IOdirname]
+./DiallelX -d [IOdirname]
 DiallelX: IO
   IO directory       :  [IOdirname]
   output file        :  [IOdirname]/results/candidates.csv
@@ -248,7 +280,7 @@ DiallelX: Done
 ```
 However, running with `-l` option:
 ```bash
-$ ./DiallelX -l -d [IOdirname]
+./DiallelX -l -d [IOdirname]
 ```
 is recommended before calculation with a huge dataset to show the list of parameters without diallel calculation.
 
@@ -259,60 +291,56 @@ For example, checking processing time with one continuous record and $\sim$ 1,00
 
 For other options, run
 ```bash
-$ ./DiallelX -h
+./DiallelX -h
 ```
 to show help.
 
 ## Interpretation of results
 
 The command in the [previous section](#diallel-calculation) provides two following files:
-+ `[IOdirname]/results/candidates.[ext]`
++ `[IOdirname]/results/candidates.csv`
 + `[IOdirname]/results/histogram.dat`
-
-where `[ext]` is `txt` (visible, but large filesize), `csv` (default; leading zero of the NCC value is omitted), or `bin` (binary format of `"%int32%int32%int32%float32"` in each line); users can choose the output format by `-o` option.
-The size of txt and csv is ~130-145% and ~320-340% of bin, respectively.
-See also the help (`./DiallelX -h`).
 
 ### Event candidates
 
-The following explains the case of `txt` (`./DiallelX -d [IOdirname] -o txt`), but almost the same with `csv` and `bin`.
-
-The output file includes a list of initial points of similar waveforms to one of the templates.
+The output file `candidates.csv` includes a list of similar waveforms, sorted by their NCC value in descending order.
 ```bash
-$ cat [IOdirname]/results/candidates.txt
-           1         483         497  0.150455445    
-           1        1664         487  0.506025553    
-           ⋮
-           1     8638749         208  0.165431261    
-           2         903         631  0.176952243    
-           2        2029         477  0.173745930    
-           ⋮
+head [IOdirname]/results/candidates.csv | column -s, -t
+0.97231  4  4429856  14
+0.96088  1  1948106  12
+0.96004  1  5761983  7
+0.94624  4  6657165  16
+0.93600  3  8161597  24
+0.92957  2  1607820  23
+0.92449  1  194523   9
+0.92246  3  4860318  7
+0.91865  2  2760234  9
+0.91829  4  2838100  23
 ```
-Each column represents the continuous record number, the initial sample number, the most similar template waveform, and the NCC value.
-Hence, the meaning of the first line in the above list is "*A waveform starting from the 483rd sample in the 1st continuous record is similar to the 497th template with their NCC value of 0.150455445.*"
+Each column represents the NCC value, the continuous record number, the initial sample number, and the most similar template waveform.
+Hence, the meaning of the first line in the above list is "*A waveform starting from the 4429856th sample in the 4th continuous record is similar to the 14th template with their NCC value of 0.97231.*"
 
 Each line is a result from each window explained in [Algorithm: an overview](#algorithm-an-overview) section.
 However, each NCC value is compared to those of their previous and next window, and only the windows with relatively higher NCC values than their neighbors are in the output.
 This comparison reduces useless results because the neighboring windows overlap and are similar to the same template.
 
 Even if a window is similar to multiple templates, the most similar one is listed as sufficient for event detection.
-Refer to the line number in `[IOdirname]/parameters/templates.csv` to confirm the filename of the template corresponding to the number in the third column.
+Refer to the line number in `[IOdirname]/parameters/continuous_records.csv` and `[IOdirname]/parameters/templates.csv` to confirm the filename of the continuous record and template corresponding to the number in the second and forth column, respectively.
 
 Even if a window consists only of noises and is similar to nothing, at least one template number is listed.
 However, users can exclude such a window in the user-defined event detection process.
 
-Sometimes, the waveform starting from the sample number in the second column may protrude from the record.
+Sometimes, the waveform starting from the sample number in the third column may protrude from the record.
 For example, the following output is possible if the record and template lengths are 8,640,000 (=100Hz $\times$ 24hours) and 1,024, respectively:
 ```bash
-$ cat [IOdirname]/results/candidates.txt
+head [IOdirname]/results/candidates.csv | column -s, -t
            ⋮
-           1     8639986         604  0.1611223    
-           2         766         232  0.1535308    
+0.74035  1  8639986  25
            ⋮
 ```
 The record starting from `8639986` lasts until `8639986+1023=8641009`.
 This overflow can happen because *DiallelX* adds the samples of the head of the next record to the tail of the current record.
-Therefore, the waveform similar to the 604th template consists of 8639986th to 8640000th samples of the 1st record and 1st to 1009th samples of the 2nd record.
+Therefore, the waveform similar to the 25th template consists of 8639986th to 8640000th samples of the 1st record and 1st to 1009th samples of the 2nd record.
 
 ### histogram.dat
 

@@ -3,7 +3,7 @@ module m_synthetic
     use m_FFTW
     implicit none
     integer,parameter :: fs= 100
-    integer,parameter :: NumTmp = 1000
+    integer,parameter :: NumTmp = 25
     integer,parameter :: NumRec = 4
     integer,parameter :: LenRec = fs*60*60*24
     integer,parameter :: NumSt = 4
@@ -13,7 +13,7 @@ module m_synthetic
     type :: RandRange
         real(kd) :: max, min
     end type RandRange
-    type(RandRange),parameter :: SNR = RandRange(min=0.25e0, max=64e0)
+    type(RandRange),parameter :: SNR = RandRange(min=1e-1, max=16e0)
     type(RandRange),parameter :: fc4Noise = RandRange(min=0.5e0, max=2e0)
     type(RandRange),parameter :: fc4Event = RandRange(min=5e0, max=30e0)
     type(RandRange),parameter :: HypoDist = RandRange(min=5e0, max=25e0)

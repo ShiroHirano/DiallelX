@@ -26,7 +26,7 @@ set grid linetype 1 lc  rgb "#666666"
 
 set label sprintf("NCC = %5.3f",NCCval) at graph 1e-5,1.5 left tc rgb "#666666"
 set key at graph 0.99,1.5 right center horizontal tc rgb "#666666"
-set object rect behind from screen 0,0 to screen 1,1 fc rgb "#aaaaaa" fillstyle solid 1.0
+set object rect behind from screen 0,0 to screen 1,1 fc rgb "#bbbbdd" fillstyle solid 1.0
 
 set multiplot next
 

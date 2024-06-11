@@ -201,9 +201,9 @@ module m_io
 
         output_filename = trim(prm%iodir)//"/results/candidates."//prm%ext
         call Output_candidates(line,output_filename)
-        call QuickSort(line)
-        output_filename = trim(prm%iodir)//"/results/candidates_sorted."//prm%ext
-        call Output_candidates(line(n:1:-1),output_filename)
+!        call QuickSort(line)
+!        output_filename = trim(prm%iodir)//"/results/candidates_sorted."//prm%ext
+!        call Output_candidates(line(n:1:-1),output_filename)
 
     end subroutine extract_candidates
 
@@ -228,7 +228,13 @@ module m_io
         else if (ext .eq. "csv") then
             open(newunit = io_unit, file=trim(filename), status="replace", action="write")
             do i=1,size(line)
-                write(io_unit,'(*(G0.6,:,","))') line(i)
+!                write(io_unit,'(*(G0.6,:,","))') line(i)
+!                integer :: RecordNo
+!                integer :: SampleNo
+!                integer :: TemplateNo
+!                real(kd) :: NCC
+                write(io_unit,'(1f7.5,",",1G0.6,",",1G0.6,",",1G0.6)') &
+                line(i)%NCC, line(i)%RecordNo, line(i)%SampleNo, line(i)%TemplateNo
             end do
         else if (ext .eq. "bin") then
             open(newunit = io_unit, file=trim(filename), status="replace", action="write", &

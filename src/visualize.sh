@@ -2,24 +2,38 @@
 
 NumPlt=$1 # Number of plots
 IOdirname=$2 # I/O directory name
-IOdirname=${IOdirname%/} # Eliminate slash (/) if any
+IOdirname=${IOdirname%/*} # Eliminate slash (/) if any
 
 path2figs=${IOdirname}/results/figs
 TmpDir=/tmp/DiallelX
 rm -r -f ${TmpDir}
 mkdir -p ${TmpDir}
 mkdir -p ${path2figs}
-echo "Dir="${IOdirname}
 source ${IOdirname}/parameters/parameters.ini
-SortedLog="${IOdirname}/results/candidates.csv"
+SortedLog="${IOdirname}/results/candidates_sorted.${Extent}"
 
 for n in `eval echo {1..${NumPlt}}`;do
 
-    line=`sed -n ${n}p ${SortedLog}`
-    NCCval=$(echo ${line} | cut -d , -f 1)
-    RecNum=$(echo ${line} | cut -d , -f 2)
-    SmpNum=$(echo ${line} | cut -d , -f 3)
-    TmpNum=$(echo ${line} | cut -d , -f 4)
+    if [ ${Extent} == "csv" ]; then
+        line=`sed -n ${n}p ${SortedLog}`
+        RecNum=$(echo ${line} | cut -d , -f 1)
+        SmpNum=$(echo ${line} | cut -d , -f 2)
+        TmpNum=$(echo ${line} | cut -d , -f 3)
+        NCCval=$(echo ${line} | cut -d , -f 4)
+    elif [ ${Extent} == "txt" ]; then
+        line=`sed -n ${n}p ${SortedLog}`
+        RecNum=$(echo ${line} | cut -d " " -f 1)
+        SmpNum=$(echo ${line} | cut -d " " -f 2)
+        TmpNum=$(echo ${line} | cut -d " " -f 3)
+        NCCval=$(echo ${line} | cut -d " " -f 4)
+    elif [ ${Extent} == "bin" ]; then
+        str=($(dd if="${SortedLog}" bs=16 skip=$(( n-1 )) count=1 status=none | od -w4 -An -t d4))
+        RecNum=${str[0]}
+        SmpNum=${str[1]}
+        TmpNum=${str[2]}
+        str=($(dd if="${SortedLog}" bs=16 skip=$(( n-1 )) count=1 status=none | od -w4 -An -t f4))
+        NCCval=${str[3]}
+    fi
 
     echo "# Temporal parameter setting for gnuplot" >  ${TmpDir}/plot_Parameters.ini
     echo "NumChn="${NumChn} >>  ${TmpDir}/plot_Parameters.ini
@@ -71,13 +85,15 @@ for n in `eval echo {1..${NumPlt}}`;do
 
     gnuplot src/plot.gnuplot
 
+    NCCval=${NCCval/E-1/*0.1}
+    NCCval=${NCCval/E-2/*0.01}
     NCCval=$(echo "${NCCval} * 1000" | bc | xargs printf "%03d")
 
     mv ${TmpDir}/out.svg ${path2figs}/${NCCval}_${RecNum}-${SmpNum}_${TmpNum}.svg
     echo "  "${n}"/"${NumPlt}: ${NCCval}_${RecNum}-${SmpNum}_${TmpNum}.svg
 
 done
-rm -r -f ${TmpDir}
+#rm -r -f ${TmpDir}
 
 #svglist=`ls ${path2figs}/*.svg`
 #for file in ${svglist};do

@@ -23,7 +23,6 @@ program main
     call getarg(3,extention)
 
     if (mode == "DummyDataSynthesizer") then
-        print*, trim(iodir)
         call synthetic(trim(iodir))
         stop
     end if
