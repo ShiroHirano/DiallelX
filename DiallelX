@@ -6,10 +6,11 @@ Usage: ./DiallelXCorr [options] -d [IOdirname]
 
 Assuming that continuous and template waveform files,
 SAC or float32 binary format without record boundaries, 
-are located in ./[IOdirname] directory.
+are located in [IOdirname] directory that is specified
+as a relative or absolute path.
 Nomenclature of the files are as follows:
-./[IOdirname]/continuous_records/[RecordID]_[ChannelID].sac (or .bin)
-./[IOdirname]/templates/[TemplateID]_[ChannelID].sac (or .bin)
+[IOdirname]/continuous_records/[RecordID]_[ChannelID].sac (or .bin)
+[IOdirname]/templates/[TemplateID]_[ChannelID].sac (or .bin)
 where [RecordID] and [TemplateID] must not contain underscore,
 and [ChannelID] are common among continuous and template files.
 

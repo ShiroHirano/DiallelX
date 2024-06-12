@@ -11,6 +11,7 @@ Table of Contents
     - [1. Install `gfortran` and `libfftw3-dev`](#1-install-gfortran-and-libfftw3-dev)
     - [2. Install Intel oneAPI Base Toolkit and Intel HPC Toolkit](#2-install-intel-oneapi-base-toolkit-and-intel-hpc-toolkit)
     - [3. Use Intel Fortran Compiler Classic (`ifort`) that is deprecated and no longer distributed](#3-use-intel-fortran-compiler-classic-ifort-that-is-deprecated-and-no-longer-distributed)
+    - [To specify compiler](#to-specify-compiler)
   - [Preparing data files: nomenclature](#preparing-data-files-nomenclature)
     - [Continuous waveform records](#continuous-waveform-records)
     - [Template waveforms](#template-waveforms)
@@ -86,20 +87,16 @@ Users have three installation options (the first is recommended, given official 
 
 Here is the installation guide for Linux Mint 21.x (the development environment of *DiallelX*), Ubuntu 22.04, and AlmaLinux 9.3 <!--macOS Sonoma-->.
 
-> [!WARNING]
-> (2024-06-09)
-> After upgrading to ifort Version 2021.12.0 Build 20240211_000000 on Ubuntu/Linux Mint, ifort does not work because of [missing omp_lib](https://community.intel.com/t5/Intel-Fortran-Compiler/After-upgrading-ifort-no-longer-finds-include-dir-for-OpenMP/td-p/1600614).
-
 ### 1. Install `gfortran` and `libfftw3-dev`
 
 For Ubuntu (`make` has not been installed by default) or Linux Mint:
 ```bash
-sudo apt install make gfortran libfftw3-dev -y
+sudo apt install make gfortran libfftw3-dev gnuplot -y
 ```
 
 For AlmaLinux:
 ```bash
-sudo dnf install gfortran fftw3-devel -y 
+sudo dnf install gfortran fftw3-devel gnuplot -y 
 ```
 <!--
 For macOS Sonoma:
@@ -110,12 +107,21 @@ brew install gcc fftw
 
 ### 2. Install [Intel oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) and [Intel HPC Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit-download.html)
 
+> [!WARNING]
+> (2024-06-09)
+> After upgrading to ifort Version 2021.12.0 Build 20240211_000000 on Ubuntu/Linux Mint, ifort does not work because of [missing omp_lib](https://community.intel.com/t5/Intel-Fortran-Compiler/After-upgrading-ifort-no-longer-finds-include-dir-for-OpenMP/td-p/1600614).
+> Tentatively, to avoid this problem with ifort, copy and paste
+> ```
+> $(shell ./omp_lib_finder.sh)
+> ```
+> into the right hand (blank) side of 13th line in `src/Makefile` (INCLUDE = ).
+
 For Linux Mint/Ubuntu, the following procedures are provided in the above two links:
 ```bash
 wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \ | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
 echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
 sudo apt update
-sudo apt install intel-basekit intel-hpckit -y
+sudo apt install intel-basekit intel-hpckit gnuplot -y
 ```
 
 After these installations, running
@@ -133,8 +139,18 @@ Intel Fortran Compiler Classic (`ifort`) may provide the fastest executable file
 However, `ifort` says:
 > Intel(R) Fortran Compiler Classic (ifort) is now deprecated and will be discontinued late 2024. Intel recommends that customers transition now to using the LLVM-based Intel(R) Fortran Compiler (ifx) for continued Windows* and Linux* support, new language support, new language features, and optimizations.
 
-At least for Jan. 2024, unfortunately, `ifx` provides a significantly slower executable file than `ifort` and `gfortan` does.
+At least for Jul. 2024, unfortunately, `ifx` provides a significantly slower executable file than `ifort` and `gfortan` does.
 Therefore, `Makefile` of *DiallelX* uses `ifort` if available.
+
+### To specify compiler
+
+During `make`, the compiler will be chosen automatically.
+However, if you prefer a compiler out of multiple compilers, you can run one of the following three:
+```bash
+make compiler=gfortran
+make compiler=ifort
+make compiler=ifx
+```
 
 ## Preparing data files: nomenclature
 
@@ -143,6 +159,7 @@ Input waveforms must be SAC or float32 binary files w/o record boundaries.
 In the following, ".sac" can be replaced by ".bin".
 Inside of the brackets [ &nbsp; ] can be defined by the user.
 All data files are assumed to be in subdirectories under `[IOdirname]`, whose name is arbitrary and to be specified by the user when `./DiallelX` is executed.
+`[IOdirname]` can be a relative or absolute path.
 
 ### Continuous waveform records
 

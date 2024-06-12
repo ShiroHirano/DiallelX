@@ -10,6 +10,7 @@ endif
 ifeq ($(FC),ifort)
 	FFLAGS  = -diag-disable=10448 -diag-disable=8291 -O3 -ipo -arch CORE-AVX2 -qopenmp
 	LIBS    = -qmkl
+	INCLUDE = 
 else ifeq ($(FC),ifx)
 	FFLAGS  = -diag-disable=8291 -O3 -ipo -arch CORE-AVX2 -qopenmp
 	LIBS    = -qmkl
