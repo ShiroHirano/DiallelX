@@ -7,11 +7,11 @@ files2list () {
     rm -f ${output_csv}
     touch ${output_csv}
 
-    list=($(ls -v ${iodir}/$1/*))
+    list=($(ls -v ${iodir}/$1))
     ext=${list[0]/*./}
 
     sac_header_len=632
-    rec_len=`cat ${list[0]} | wc -c`
+    rec_len=`cat ${iodir}/$1/${list[0]} | wc -c`
     if [[ ${ext} == "sac" ]]; then
         rec_len=$(( rec_len - sac_header_len ))
     fi
