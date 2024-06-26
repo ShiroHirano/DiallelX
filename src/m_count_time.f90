@@ -40,8 +40,8 @@ module m_count_time
         real(8),intent(in) :: decimalSS
         type(time) :: duration
         duration%HH = int(decimalSS)/3600
-        duration%MM = int(decimalSS)/60 - duration%HH*60
-        duration%SS = int(decimalSS) - duration%MM*60
+        duration%MM = mod(int(decimalSS)/60,60)
+        duration%SS = mod(int(decimalSS),60)
         duration%mSS = int(1000*(decimalSS - int(decimalSS)))
         return
     end subroutine sec2hhmmss
