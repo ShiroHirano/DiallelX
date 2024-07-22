@@ -76,7 +76,7 @@ module m_io
                 if ( NCC(i)%tmp .ne. 0 ) then
                     write(io_unit) rec_num, i, NCC(i)
                 end if
-                if (NCC(i)%val .gt. 1e0) print*, "m_io.f90: 79", NCC(i)%val
+!                if (NCC(i)%val .gt. 1e0) print*, "m_io.f90: 79", NCC(i)%val
             end do
         close(io_unit)
     end subroutine output_temporal_candidates
@@ -86,9 +86,9 @@ module m_io
         integer :: io_unit, i
         integer(8) :: total
         total = sum(histogram(:))
-        open(newunit = io_unit, file = trim(prm%iodir)//"/results/histogram.dat", status = "replace", action = "write")
+        open(newunit = io_unit, file = trim(prm%iodir)//"/results/histogram.csv", status = "replace", action = "write")
             do i = 1, n_bin
-                write(io_unit, '(1f7.4, 2i14)') real(i-1)/real(n_bin), histogram(i), total
+                write(io_unit, '(1f6.4,",",1I0,",",1I0)') real(i-1)/real(n_bin), histogram(i), total
                 total = total - histogram(i)
             end do
         close(io_unit)
@@ -111,8 +111,8 @@ module m_io
 
     subroutine extract_candidates(prm)
         type(Parameter), intent(in) :: prm
-        character(len=64) :: log_filename
-        character(len=64) :: output_filename
+        character(len=256) :: log_filename
+        character(len=256) :: output_filename
         type(Similarity) :: NCC(0:1)
         integer :: rec_num(0:1) = 1
         integer :: io_unit(0:1), i, j(0:1), n = 0
@@ -126,8 +126,8 @@ module m_io
             form="unformatted", status="replace", action="write", access="stream")
             do
                 read(io_unit(0),end=999) rec_num(1), j(1), NCC(1)
-                if (NCC(0)%val .gt. 1e0) print*, "m_io.f90: 129", NCC(0)%val
-                if (NCC(1)%val .gt. 1e0) print*, "m_io.f90: 130", NCC(1)%val
+!                if (NCC(0)%val .gt. 1e0) print*, "m_io.f90: 129", NCC(0)%val
+!                if (NCC(1)%val .gt. 1e0) print*, "m_io.f90: 130", NCC(1)%val
                 if (NCC(1)%val > 1.001) then
                     print*, rec_num(1), j(1), NCC(1)
                     stop
@@ -171,7 +171,7 @@ module m_io
         form="unformatted", status="old", action="read", access="stream")
         do i = 1,n
             read(io_unit(0)) line(i)
-            if (line(i)%NCC .gt. 1e0) print*, "m_io.f90: 172", line(i)%NCC
+!            if (line(i)%NCC .gt. 1e0) print*, "m_io.f90: 172", line(i)%NCC
         end do
         close(io_unit(0))
 
@@ -200,15 +200,16 @@ module m_io
 !        end if
 
         output_filename = trim(prm%iodir)//"/results/candidates."//prm%ext
-        call Output_candidates(line,output_filename)
+        call Output_candidates(prm,line,output_filename)
 !        call QuickSort(line)
 !        output_filename = trim(prm%iodir)//"/results/candidates_sorted."//prm%ext
 !        call Output_candidates(line(n:1:-1),output_filename)
 
     end subroutine extract_candidates
 
-    subroutine Output_candidates(line,filename)
-        type(candidates),intent(in) :: line(:)
+    subroutine Output_candidates(prm,line,filename)
+        type(Parameter), intent(in) :: prm
+        type(candidates),intent(inout) :: line(:)
         character(len=*) :: filename
         character(len=3) :: ext
         integer :: i, idx, io_unit
@@ -227,15 +228,19 @@ module m_io
             end do
         else if (ext .eq. "csv") then
             open(newunit = io_unit, file=trim(filename), status="replace", action="write")
-            do i=1,size(line)
-!                write(io_unit,'(*(G0.6,:,","))') line(i)
-!                integer :: RecordNo
-!                integer :: SampleNo
-!                integer :: TemplateNo
-!                real(kd) :: NCC
-                write(io_unit,'(1f7.5,",",1G0.6,",",1G0.6,",",1G0.6)') &
-                line(i)%NCC, line(i)%RecordNo, line(i)%SampleNo, line(i)%TemplateNo
+            do i=1,size(line)-1
+                if (line(i)%RecordNo /= line(i+1)%RecordNo &
+                    .or. abs(line(i)%SampleNo-line(i+1)%SampleNo) >= prm%l_tmp) then
+                    write(io_unit,'(1f7.5,",",1G0.6,",",1G0.6,",",1G0.6)') &
+                    line(i)%NCC, line(i)%RecordNo, line(i)%SampleNo, line(i)%TemplateNo
+                else if (line(i)%NCC >= line(i+1)%NCC) then
+                    line(i+1) = line(i)
+                else
+                end if
             end do
+            i=size(line)
+            write(io_unit,'(1f7.5,",",1G0.6,",",1G0.6,",",1G0.6)') &
+            line(i)%NCC, line(i)%RecordNo, line(i)%SampleNo, line(i)%TemplateNo
         else if (ext .eq. "bin") then
             open(newunit = io_unit, file=trim(filename), status="replace", action="write", &
             form="unformatted", access="stream")

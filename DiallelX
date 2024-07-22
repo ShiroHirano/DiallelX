@@ -90,6 +90,7 @@ while (( $# > 0 )); do
 done
 
 if [ ${mode} = "DummyDataSynthesizer" ];then
+    echo "DIRNAME="${iodir}
     mkdir -p ${iodir}
     mkdir -p ${iodir}/continuous_records
     mkdir -p ${iodir}/templates
@@ -129,7 +130,9 @@ date +'Start: %Y-%m-%d %T' > ${logfile}
 echo "Extent="${o_ext}" # extention of output files" >> ${iodir}/parameters/parameters.ini
 
 ./bin/DiallelX.o ${mode} ${iodir} ${o_ext} 1> >(tee -a ${logfile})
-sort -V -t "," -k 1,4 -r ${iodir}/results/candidates.csv -o ${iodir}/results/candidates.csv 
+#sort -V -t "," -k 1,4 -r ${iodir}/results/candidates.csv -o ${iodir}/results/candidates.csv 
+mv ${iodir}/results/candidates.csv ${iodir}/results/candidates_history.csv 
+sort -V -t "," -k 1,4 -r ${iodir}/results/candidates_history.csv -o ${iodir}/results/candidates.csv 
 
 rm -f ${iodir}/results/temporal_log.bin
 rm -f /tmp/DiallelX_temporal_log.bin

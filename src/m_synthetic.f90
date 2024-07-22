@@ -3,11 +3,11 @@ module m_synthetic
     use m_FFTW
     implicit none
     integer,parameter :: fs= 100
-    integer,parameter :: NumTmp = 25
+    integer,parameter :: NumTmp = 18923
     integer,parameter :: NumRec = 4
-    integer,parameter :: LenRec = fs*60*60*24
+    integer,parameter :: LenRec = 800000!fs*60*60*24
     integer,parameter :: NumSt = 4
-    integer,parameter :: NumCh = 3
+    integer,parameter :: NumCh = 4
     integer,parameter :: LenTmp = 2**10
     integer,parameter :: ExtLenTmp = 4*LenTmp
     type :: RandRange
@@ -18,7 +18,7 @@ module m_synthetic
     type(RandRange),parameter :: fc4Event = RandRange(min=5e0, max=30e0)
     type(RandRange),parameter :: HypoDist = RandRange(min=5e0, max=25e0)
     type(RandRange),parameter :: SeisVelo = RandRange(min=3.6e0, max=6.0e0)
-    character(len=1),parameter :: comp(3) = ["E","N","U"]
+    character(len=1),parameter :: comp(4) = ["E","N","U","T"]
 
     contains
 

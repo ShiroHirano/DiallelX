@@ -10,6 +10,7 @@ program main
     use m_synthetic
     implicit none
     type(Similarity), allocatable :: NCC(:)
+    real(kd), allocatable :: tmp(:, :, :), cnt(:, :)
     complex(kd), allocatable :: Ftmp(:, :, :), Fcnt(:, :, :)
     character(len = 256), allocatable :: conti_file(:, :)
     integer(8) :: histogram(n_bin) = 0
@@ -31,7 +32,7 @@ program main
 
     if (mode == "ParameterCheckerMode") stop
 
-    call FFT_templ(prm, Ftmp)
+    call FFT_templ(prm, tmp, Ftmp)
 
     call read_filelist(trim(iodir)//"/parameters/continuous_records.csv", prm, conti_file)
 
@@ -40,14 +41,13 @@ program main
     call tic("DiallelX: Main loop started", rap)
 
     do i = 1, prm%n_rec
-
         call progress_reports(i,conti_file(i,1),prm%n_rec)
 
-        call FFT_conti(prm, conti_file(i:i+1, :), Fcnt)
+        call FFT_conti(prm, conti_file(i:i+1, :), cnt, Fcnt)
 
         call calculate_NCC(prm, Ftmp, Fcnt, NCC, histogram)
         
-        call confirm_lag(prm, conti_file(i:i+1, :), i, NCC)
+        call confirm_lag(prm, tmp, cnt, conti_file(i:i+1, :), i, NCC)
 
         call toc(rap)
     end do
@@ -61,10 +61,10 @@ program main
 stop
 contains
 
-    subroutine FFT_templ(prm, Ftmp)
+    subroutine FFT_templ(prm, tmp, Ftmp)
         type(Parameter), intent(in) :: prm
+        real(kd), intent(out), allocatable :: tmp(:, :, :)
         complex(kd), intent(out), allocatable :: Ftmp(:, :, :)
-        real(kd), allocatable :: tmp(:, :, :)
         complex(kd), allocatable :: Fu(:)
         real(kd), allocatable :: u(:)
         integer :: i, j, n
@@ -83,14 +83,13 @@ contains
         end do
         !$omp end parallel do
         Ftmp(1, :, :) = 0e0
-        deallocate(tmp)
     end subroutine FFT_templ
 
-    subroutine FFT_conti(prm, filename, Fcnt)
+    subroutine FFT_conti(prm, filename, cnt, Fcnt)
         type(Parameter), intent(in) :: prm
         character(len = 256), intent(in) :: filename(:, :)
         complex(kd), intent(out), allocatable :: Fcnt(:, :, :)
-        real(kd), allocatable :: cnt(:, :)
+        real(kd), intent(out), allocatable :: cnt(:, :)
         real(kd), allocatable :: u(:)
         complex(kd), allocatable :: Fu(:)
         integer :: c, i, j, l, st, w
@@ -128,9 +127,10 @@ contains
         integer :: i, j, k, l, ii, jj, idx
         real(kd) :: peak, current
         allocate(Fu(prm%l_tmp/2+1), u(prm%l_tmp))
-        NCC%val = -1e1
+!        NCC%val = -1e1
+        NCC(:) = Similarity(lag = 0, val = -1e1, tmp = 0)
         planC2R = fftwf_plan_dft_c2r_1d(prm%l_tmp, Fu, u, fftw_estimate)
-        !$omp parallel do collapse(2) reduction(+:histogram) private(jj, i, j, k, Fu, u, l, peak, idx) schedule(dynamic)
+        !$omp parallel do reduction(+:histogram) private(jj, i, j, k, Fu, u, l, peak, idx) schedule(dynamic)
         do ii = 1, prm%n_win, skip    ! outer loop for chache blocking technique
             do jj = 1, prm%n_tmp, skip    ! outer loop for chache blocking technique
                 do i = ii, min(prm%n_win, ii+skip-1)    ! inner loop for chache blocking technique
@@ -150,40 +150,46 @@ contains
             end do
         end do
         !$omp end parallel do
+        deallocate(Fu,u)
     end subroutine calculate_NCC
 
-    subroutine confirm_lag(prm, filename, rec_num, NCC)
+    subroutine confirm_lag(prm, tmp, cnt, filename, rec_num, NCC)
         type(Parameter), intent(in) :: prm
         character(len = 256), intent(in) :: filename(:, :)
         integer, intent(in) :: rec_num
         type(Similarity), intent(inout) :: NCC(:)
-        real(kd), allocatable :: conti(:, :)
-        real(kd), allocatable :: tmp(:, :, :)
+        real(kd), intent(in) :: tmp(:, :, :), cnt(:, :)
         real(kd), allocatable :: x(:), y(:), c(:)
         complex(kd), allocatable :: Fx(:), Fy(:)
-        integer :: i, j, l, n, st
-        call read_templ(prm, tmp)
+        integer :: i, j, l, n, st, w, range(2), time
+        !        call tic("read_templ",time)
+        !        call read_templ(prm, tmp)
+        !        call toc(time)
         l = prm%l_rec
-        allocate(conti(l+prm%l_pad, prm%n_chn))
-        call read_conti(prm, filename(1, :), conti(:l, :))
-        call read_conti(prm, filename(2, :), conti(l+1:, :))
+!        allocate(cnt(l+prm%l_pad, prm%n_chn))
+!        call read_cnt(prm, filename(1, :), cnt(:l, :))
+!        call read_cnt(prm, filename(2, :), cnt(l+1:, :))
         n = prm%l_tmp
         allocate(x(2*n), y(2*n), c(2*n))
         allocate(Fx(n+1), Fy(n+1))
         planR2C = fftwf_plan_dft_r2c_1d(2*n, x, Fx, fftw_estimate)
         planC2R = fftwf_plan_dft_c2r_1d(2*n, Fx, x, fftw_estimate)
+        w = n/prm%l_str - 1
         !$omp parallel do private(c, st, j, x, Fx, y, Fy, l) schedule(dynamic)
         do i = 1, prm%n_win
+            range(1) = max(1,i-w)
+            range(2) = min(i+w,prm%n_win)
             if ( (NCC(i)%val < threshold) &
-                .or. (NCC(i)%val < NCC(max(1,i-1))%val) &
-                .or. (NCC(i)%val < NCC(min(prm%n_win,i+1))%val) ) then
+        !                .or. (NCC(i)%val < NCC(max(1,i-1))%val) &
+        !                .or. (NCC(i)%val < NCC(min(prm%n_win,i+1))%val) ) then
+                .or. (NCC(i)%val < maxval(NCC(range(1):range(2))%val) ) ) then
                     NCC(i)%tmp = 0
                     cycle
             end if
             c = 0e0
             st = (i-1)*prm%l_str
             do j = 1, prm%n_chn
-                x(:n) = normalize(conti(st+1:st+n, j))
+                x(:n) = normalize(cnt(st+1:st+n, j))
                 x(n+1:) = 0e0
                 call fftwf_execute_dft_r2c(planR2C, x, Fx)
                 y(:n) = 0e0
@@ -195,11 +201,11 @@ contains
             end do
             l = maxloc(c, 1)
             NCC(i)%lag = st + l - n - 1
-!            if (NCC(i)%lag < 0 .or. NCC(i)%lag > prm%l_rec) NCC(i)%tmp = 0
+        !            if (NCC(i)%lag < 0 .or. NCC(i)%lag > prm%l_rec) NCC(i)%tmp = 0
             if (NCC(i)%lag > prm%l_rec) NCC(i)%tmp = 0
         end do
         !$omp end parallel do
         call output_temporal_candidates(NCC, prm, rec_num)
-    end subroutine confirm_lag
-
-end program main
+        end subroutine confirm_lag
+        
+        end program main

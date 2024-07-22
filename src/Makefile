@@ -8,14 +8,14 @@ ifeq ($(FC), )
 endif
 
 ifeq ($(FC),ifort)
-	FFLAGS  = -diag-disable=10448 -diag-disable=8291 -O3 -ipo -arch CORE-AVX2 -qopenmp
+	FFLAGS  = -diag-disable=10448 -diag-disable=8291 -O3 -ipo -arch AVX2 -qopenmp
 	LIBS    = -qmkl
-	INCLUDE = 
+	INCLUDE = -I/opt/intel/oneapi/2024.1/opt/compiler/include/intel64
 else ifeq ($(FC),ifx)
-	FFLAGS  = -diag-disable=8291 -O3 -ipo -arch CORE-AVX2 -qopenmp
+	FFLAGS  = -diag-disable=8291 -O3 -ipo -xHost -qopenmp
 	LIBS    = -qmkl
 else ifeq ($(FC),gfortran)
-	FFLAGS  = -Ofast -O3 -march=native -fopenmp
+	FFLAGS  = -Ofast -march=native -fopenmp
 	LIBS    = $(shell ./lib_path_finder.sh)
 	LIBS   += -lfftw3f
 	INCLUDE = -I$(shell ./fftw3_path_finder.sh)
@@ -36,6 +36,7 @@ OBJS = m_count_time.o \
 $(PROGRAM): $(OBJS)
 	mkdir ../bin 2> /dev/null
 	$(FC) -I./ $^ ${INCLUDE} ${LDFLAGS} ${LIBS} ${FFLAGS} -o ${PROGRAM}
+	mv -f *.mod *.o ../bin
 
 .SUFFIXES:
 .SUFFIXES: .f90 .o
