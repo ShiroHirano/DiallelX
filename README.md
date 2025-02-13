@@ -91,7 +91,7 @@ Here is the installation guide for Linux Mint 21.x (the development environment 
 
 For Ubuntu (`make` has not been installed by default) or Linux Mint:
 ```bash
-sudo apt install make gfortran libfftw3-dev gnuplot -y
+sudo apt install make gfortran libfftw3-dev locate gnuplot -y
 ```
 
 For AlmaLinux:
