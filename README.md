@@ -30,8 +30,8 @@ Table of Contents
 <summary>Ubuntu/Linux Mint</summary>
 
 ```bash
-# Install required packages
-sudo apt install make gfortran libfftw3-dev gnuplot -y
+# Install required packages (make and locate are installed in Linux Mint by default)
+sudo apt install make locate gfortran libfftw3-dev gnuplot -y
 # Build DiallelX
 make
 # Generate dummy data in a directory named "test"
@@ -89,9 +89,9 @@ Here is the installation guide for Linux Mint 21.x (the development environment 
 
 ### 1. Install `gfortran` and `libfftw3-dev`
 
-For Ubuntu (`make` has not been installed by default) or Linux Mint:
+For Ubuntu (`make` and `locate` have not been installed by default) or Linux Mint:
 ```bash
-sudo apt install make gfortran libfftw3-dev locate gnuplot -y
+sudo apt install make locate gfortran libfftw3-dev gnuplot -y
 ```
 
 For AlmaLinux:
