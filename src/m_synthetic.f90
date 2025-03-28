@@ -18,7 +18,7 @@ module m_synthetic
     type(RandRange),parameter :: fc4Event = RandRange(min=5e0, max=30e0)
     type(RandRange),parameter :: HypoDist = RandRange(min=5e0, max=25e0)
     type(RandRange),parameter :: SeisVelo = RandRange(min=3.6e0, max=6.0e0)
-    character(len=1),parameter :: comp(4) = ["E","N","U","T"]
+    character(len=1),parameter :: comp(3) = ["E","N","U"]
 
     contains
 
