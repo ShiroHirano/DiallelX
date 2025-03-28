@@ -3,11 +3,11 @@ module m_synthetic
     use m_FFTW
     implicit none
     integer,parameter :: fs= 100
-    integer,parameter :: NumTmp = 18923
+    integer,parameter :: NumTmp = 1000
     integer,parameter :: NumRec = 4
-    integer,parameter :: LenRec = 800000!fs*60*60*24
+    integer,parameter :: LenRec = fs*60*60*24
     integer,parameter :: NumSt = 4
-    integer,parameter :: NumCh = 4
+    integer,parameter :: NumCh = 3
     integer,parameter :: LenTmp = 2**10
     integer,parameter :: ExtLenTmp = 4*LenTmp
     type :: RandRange
