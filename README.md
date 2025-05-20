@@ -441,9 +441,7 @@ T = (0.278 + 2.634) m = 2.912 \ m.
 ```
 Therefore, eq.(2) gets relatively faster as the number of channels increases.
 
-<!--
 ## Reference
 
 To cite this code:
-+ Hirano, S., &amp; Naoi, M. (2025) DiallelX: a modern fortran code for calculating network cross-correlation, Prog. Earth Planet. Sci., https://doi.org/10.1186/s40645-025-00701-x
--->
++ Hirano, S., &amp; Naoi, M. (2025), *DiallelX*: a modern fortran code for calculating network cross-correlation, *Prog. Earth Planet. Sci.*, 12:31, [https://doi.org/10.1186/s40645-025-00701-x](https://doi.org/10.1186/s40645-025-00701-x)
