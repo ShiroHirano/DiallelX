@@ -61,8 +61,8 @@ make
 
 ## Introduction
 
-*DiallelX* is a CPU-oriented modern fortran program to approximate Network Cross-Correlation coefficients (NCCs) among multiple continuous records and template waveforms observed at multiple seismic stations.
-The results, relatively less accurate but sufficient to find new seismic events, are obtained several-fold faster than a conventional scheme.
+*DiallelX* is a CPU-oriented modern fortran program that approximates Network Cross-Correlation coefficients (NCCs) among multiple continuous records and template waveforms observed at multiple seismic stations.
+The results, while relatively less accurate but sufficient to find new seismic events, are obtained several-fold faster than a conventional scheme.
 
 Required steps are as follows:
 
@@ -71,16 +71,16 @@ Required steps are as follows:
 0. Run `./DiallelX -d [IOdirname]`
 0. Define new events based on results and stats
 
-Apropos, *DiallelX* is derived from a terminology of genetics as follows<sup>[[Hayman 1954]](https://doi.org/10.1093/genetics/39.6.789)</sup>:
+Apropos, *DiallelX* is derived from a terminology in genetics as follows<sup>[[Hayman 1954]](https://doi.org/10.1093/genetics/39.6.789)</sup>:
 > A *diallel cross* is the set of all possible matings between several genotypes.
 
 Therefore, the term *diallel* in this context represents the set of cross-correlation coefficients (or functions) between all possible pairs of the continuous and template waveforms.
 
 ## Installation
 
-Just running `make` under the `DiallelX` directory compiles the program.
+Just running `make` in the `DiallelX` directory compiles the program.
 However, other tools must have been installed before `make`.
-Users have three installation options (the first is recommended, given official deprecation of `ifort` as in the third):
+Users have three installation options (the first is recommended, given the official deprecation of `ifort` as in the third):
 
 1. Install `gfortran` and `fftw3`
 1. Install [Intel oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit-download.html) and [Intel HPC Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit-download.html)
@@ -159,7 +159,7 @@ Here is an example of the nomenclature of waveform files.
 Input waveforms must be SAC or float32 binary files w/o record boundaries.
 In the following, ".sac" can be replaced by ".bin".
 Inside of the brackets [ &nbsp; ] can be defined by the user.
-All data files are assumed to be in subdirectories under `[IOdirname]`, whose name is arbitrary and to be specified by the user when `./DiallelX` is executed.
+All data files are assumed to be in subdirectories under `[IOdirname]`, the name of which is arbitrary and should be be specified by the user when `./DiallelX` is executed.
 `[IOdirname]` can be a relative or absolute path.
 
 ### Continuous waveform records
@@ -169,9 +169,9 @@ For example, a daily record with 100 Hz sampling rate results in 100 $\times$ 60
 
 Users have to place continuous records in `[IOdirname]/continuous_records/`, where the file names are assumed to be `[RecordID]_[ChannelID].sac`.
 
-`[RecordID]` is IDs of each continuous record; e.g., hourly, daily, weekly, etc. However, monthly-long data are not suitable due to their different lengths.
+`[RecordID]` are the IDs of each continuous record; e.g., hourly, daily, weekly, etc. However, monthly-long data are not suitable due to their different lengths.
 Note that too long (e.g., 100 Hz yearly) data per file is not acceptable because the number of samples for each file is represented by int32, and its maximum is $2^{31}-1 = 2,147,483,647$.
-The record IDs must be free of underscore ( _ ) because the first underscores are considered separators.
+The record IDs must be free of an underscore ( _ ) because the first underscore is considered a separator.
 `[ChannelID]` (e.g., station codes and components) must be common among continuous records and template waveforms and can include underscores; for example, the following format is possible for daily records:
 ```bash
 ls -1v [IOdirname]/continuous_records/
@@ -192,8 +192,8 @@ Instead, `YYYYMMDD` may be replaced by sequential numbers, and  `[ChannelID]` ca
 
 ### Template waveforms
 
-The length of all template waveforms must be the same and maybe a power of 2 given a property of FFT.
-Other lengths of composite number (e.g., $10^n$) are possible but may slow the calculation speed.
+The length of all template waveforms must be the same and may be a power of 2 given a property of FFT.
+Lengths of other composite numbers (e.g., $10^n$) are possible but may slow down the calculation speed.
 
 Users have to locate template waveforms in `[IOdirname]/templates/`, where the file names are assumed to be `[TemplateID]_[ChannelID].sac`.
 
@@ -225,7 +225,7 @@ Note that even the autocorrelation of a template is not necessarily equal to 1.0
 However, users can control the accuracy.
 
 In the calculation, each continuous record with length `r` is divided into `n` windows with length `w` equivalent to the template length.
-The division of `k`-th record is schematically as follows.:
+The division of the `k`-th record is schematically as follows.:
 ```
 ┌----------k-th record----------┐┌--------(k+1)-th record--------┐
 1......s.....w..................r1......s..p
@@ -300,7 +300,7 @@ However, running with `-l` option:
 ```bash
 ./DiallelX -l -d [IOdirname]
 ```
-is recommended before calculation with a huge dataset to show the list of parameters without diallel calculation.
+is recommended before starting a calculation with a huge dataset to show the list of parameters without running the diallel calculation.
 
 In the list, `required memory` is roughly estimated given the size of some large arrays.
 Through the same environment, the total processing time is proportional to `computation cost` if the `number of templates` is sufficiently large ($\gtrsim$ 500).
@@ -336,7 +336,7 @@ head [IOdirname]/results/candidates.csv | column -s, -t
 0.91829  4  2838100  23
 ```
 Each column represents the NCC value, the continuous record number, the initial sample number, and the most similar template waveform.
-Hence, the meaning of the first line in the above list is "*A waveform starting from the 4429856th sample in the 4th continuous record is similar to the 14th template with their NCC value of 0.97231.*"
+Hence, the meaning of the first line in the above list is "*A waveform starting from the 4429856th sample in the 4th continuous record is similar to the 14th template with an NCC value of 0.97231.*"
 
 Each line is a result from each window explained in [Algorithm: an overview](#algorithm-an-overview) section.
 However, each NCC value is compared to those of their previous and next window, and only the windows with relatively higher NCC values than their neighbors are in the output.
@@ -393,7 +393,7 @@ Only their local peaks along the lateral direction (saturated blue) are output t
 ## Appendix B: Details of algorithm
 
 As in [Algorithm: an overview](#algorithm-an-overview) section, *DiallelX* calculates NCC values between windows cut out from the continuous records and templates.
-Here, we explain why this algorithm reduces computation time.
+Here, we explain how this algorithm reduces computation time.
 
 Let $r$, $w$, and $s$ be the lengths of the continuous record, template waveform, and stride, respectively, as in the main text.
 For each window and template, we first calculate a cross-correlation function between them and extract its maximum.
@@ -405,12 +405,12 @@ Another point is that all waveforms are observed in multiple channels, where $m$
 
 For $k=1,2,\ldots,w$ and $\textrm{Ch}=1,2,\ldots, m$, we assume that $x_k^{(\textrm{Ch})}$ and $y_k^{(\textrm{Ch})}$ are $k$-th sample of continuous and template waveforms in $\textrm{Ch}$-th channel, respectively.
 After offset elimination and $L^2$ normalization, we calculate FFT of the waveforms, denoted as $X_k^{(\textrm{Ch})}$ and $Y_k^{(\textrm{Ch})}$.
-The time domain corss-correlation function in $\textrm{Ch}$-th channel, $CF_j^{(\textrm{Ch})}$, is obtained as
+The time domain cross-correlation function in the $\textrm{Ch}$-th channel, $CF_j^{(\textrm{Ch})}$, is obtained as
 ```math
 CF_j^{(\textrm{Ch})} = \frac{1}{w} \sum_{k=1}^w X_k^{(\textrm{Ch})} \overline{Y_k^{(\textrm{Ch})}} \exp\left(2 \pi i \frac{j k}{w}\right),
 ```
 where the overline denotes the complex conjugate, and $i$ is the imaginary unit.
-The NCC value between $-1$ and $+1$ is obtained as follows:
+The NCC value that ranges between $-1$ and $+1$ is obtained as follows:
 ```math
 NCC = \max_j \frac{1}{m} \sum_{\textrm{Ch}=1}^{m} CF_j^{(\textrm{Ch})}. \tag{1}
 ```
