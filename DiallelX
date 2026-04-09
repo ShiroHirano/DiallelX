@@ -2,7 +2,7 @@
 
 function usage() {
 cat <<EOF
-Usage: ./DiallelXCorr [options] -d [IOdirname]
+Usage: ./DiallelX [options] -d [IOdirname]
 
 Assuming that continuous and template waveform files,
 SAC or float32 binary format without record boundaries, 
@@ -82,7 +82,7 @@ while (( $# > 0 )); do
         -*)
             echo "Invalid option."
             echo "To display help, type as follows:"
-            echo "./DiallelXCorr -h"
+            echo "./DiallelX -h"
             exit 1
             ;;
     esac
